@@ -21,16 +21,14 @@
             <version>5.37.0</version>
         </dependency>
         <dependency>
-            <groupId>tools.jackson.core</groupId>
+            <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>3.2.3</version>
-            <scope>compile</scope>
+            <version>2.18.2</version>
         </dependency>
         <dependency>
-            <groupId>tools.jackson.datatype</groupId>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>3.0.0-rc2</version>
-            <scope>compile</scope>
+            <version>2.18.2</version>
         </dependency>
     </dependencies>
 

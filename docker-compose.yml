@@ -1,0 +1,14 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"    # porta AMQP, usada pelo código Java pra publicar/consumir
+      - "15672:15672"  # interface web de administração
+    networks:
+      - atividade5-net
+
+networks:
+  atividade5-net:
+    driver: bridge
+  
