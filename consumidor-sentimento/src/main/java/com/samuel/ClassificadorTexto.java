@@ -1,19 +1,15 @@
 package com.samuel;
 
-import smile.classification.NaiveBayes;
+import smile.classification.DiscreteNaiveBayes;
 
 import java.util.*;
 
-/**
- * Classificador Naive Bayes multinomial usando a biblioteca Smile.
- * Converte texto em vetores de contagem de palavras (bag-of-words)
- * antes de entregar para o modelo, que trabalha apenas com double[].
- */
+
 public class ClassificadorTexto {
 
     private final List<String> classes;
     private final Map<String, Integer> vocabulario = new LinkedHashMap<>();
-    private final NaiveBayes modelo;
+    private final DiscreteNaiveBayes modelo;
 
     public ClassificadorTexto(Map<String, List<String>> exemplosPorClasse) {
         this.classes = new ArrayList<>(exemplosPorClasse.keySet());
@@ -27,34 +23,43 @@ public class ClassificadorTexto {
             }
         }
 
-        // 2. Converte cada frase de treino num vetor de contagem, junto com o índice da classe
-        List<double[]> vetoresTreino = new ArrayList<>();
+        int k = classes.size();
+        int p = vocabulario.size();
+
+        // 2. Converte cada frase de treino num vetor de contagem de palavras (int[]),
+        //    junto com o índice da classe correspondente
+        List<int[]> vetoresTreino = new ArrayList<>();
         List<Integer> rotulos = new ArrayList<>();
 
-        for (int classeIdx = 0; classeIdx < classes.size(); classeIdx++) {
+        for (int classeIdx = 0; classeIdx < k; classeIdx++) {
             for (String frase : exemplosPorClasse.get(classes.get(classeIdx))) {
                 vetoresTreino.add(vetorizar(frase));
                 rotulos.add(classeIdx);
             }
         }
 
-        double[][] x = vetoresTreino.toArray(new double[0][]);
+        int[][] x = vetoresTreino.toArray(new int[0][]);
         int[] y = rotulos.stream().mapToInt(Integer::intValue).toArray();
 
-        // 3. Treina o Naive Bayes multinomial (sigma = suavização de Laplace)
-        this.modelo = NaiveBayes.fit(x, y, NaiveBayes.Model.MULTINOMIAL, classes.size(), 1.0);
+        // 3. Cria o classificador vazio (k classes, p features) e treina em lote
+        this.modelo = new DiscreteNaiveBayes(DiscreteNaiveBayes.Model.MULTINOMIAL, k, p);
+        this.modelo.update(x, y);
     }
 
     public String classificar(String texto) {
         int predicao = modelo.predict(vetorizar(texto));
+        if (predicao < 0 || predicao >= classes.size()) {
+            // Frase sem nenhuma palavra reconhecida pelo vocabulário de treino
+            return "indefinido";
+        }
         return classes.get(predicao);
     }
 
-    private double[] vetorizar(String texto) {
-        double[] vetor = new double[vocabulario.size()];
+    private int[] vetorizar(String texto) {
+        int[] vetor = new int[vocabulario.size()];
         for (String palavra : tokenizar(texto)) {
             Integer indice = vocabulario.get(palavra);
-            if (indice != null) vetor[indice]++; // palavra fora do vocabulário é ignorada
+            if (indice != null) vetor[indice]++;
         }
         return vetor;
     }

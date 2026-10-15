@@ -5,6 +5,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.rabbitmq.client.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -20,6 +21,7 @@ public class ConsumidorSuporte {
     public static void main(String[] args) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
+        ClassificadorTexto classificador = criarClassificadorSuporte();
 
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
@@ -53,9 +55,9 @@ public class ConsumidorSuporte {
 
                 TimeUnit.MILLISECONDS.sleep(800);
 
-                String categoria = classificarProvisorio(mensagem.getConteudo());
+                String suporte = classificador.classificar(mensagem.getConteudo());
                 System.out.println("[" + mensagem.getId() + "] \"" + mensagem.getConteudo()
-                        + "\" -> " + categoria);
+                        + "\" -> " + suporte);
 
                 channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 
@@ -68,8 +70,36 @@ public class ConsumidorSuporte {
         channel.basicConsume(FILA, false, callback, consumerTag -> {});
     }
 
-    // Placeholder - próximo passo substituímos pela classificação real com Smile
-    private static String classificarProvisorio(String conteudo) {
-        return "(classificação pendente)";
+    private static ClassificadorTexto criarClassificadorSuporte() {
+        Map<String, List<String>> exemplos = new HashMap<>();
+
+        exemplos.put("Problema de acesso", List.of(
+                "Não consigo fazer login na minha conta",
+                "Esqueci minha senha e o link de recuperação não chega",
+                "Minha conta foi bloqueada sem motivo aparente",
+                "Não consigo redefinir minha senha",
+                "O sistema não reconhece meu usuário",
+                "Erro de autenticação ao tentar entrar"
+        ));
+
+        exemplos.put("Problema de desempenho", List.of(
+                "O sistema está extremamente lento para carregar as páginas",
+                "O aplicativo trava ao abrir o relatório mensal",
+                "A tela fica congelada por vários segundos",
+                "O carregamento dos dados demora demais",
+                "O sistema trava constantemente durante o uso",
+                "A resposta do servidor está muito demorada"
+        ));
+
+        exemplos.put("Problema de conexão", List.of(
+                "A conexão cai constantemente durante o uso",
+                "Não consigo me conectar ao servidor, erro de timeout",
+                "A internet cai toda hora durante o uso do app",
+                "Erro de conexão ao tentar sincronizar os dados",
+                "Perco a conexão com o servidor com frequência",
+                "Falha de rede impede o acesso ao sistema"
+        ));
+
+        return new ClassificadorTexto(exemplos);
     }
 }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.rabbitmq.client.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -19,6 +20,7 @@ public class ConsumidorSentimento {
 
     public static void main(String[] args) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
+        ClassificadorTexto classificador = criarClassificadorSentimento();
         mapper.registerModule(new JavaTimeModule());
 
         ConnectionFactory factory = new ConnectionFactory();
@@ -58,7 +60,7 @@ public class ConsumidorSentimento {
                 // de propósito, pra fila crescer visivelmente na interface do RabbitMQ.
                 TimeUnit.MILLISECONDS.sleep(800);
 
-                String sentimento = classificarProvisorio(mensagem.getConteudo());
+                String sentimento = classificador.classificar(mensagem.getConteudo());
                 System.out.println("[" + mensagem.getId() + "] \"" + mensagem.getConteudo()
                         + "\" -> " + sentimento);
 
@@ -74,7 +76,36 @@ public class ConsumidorSentimento {
         channel.basicConsume(FILA, false, callback, consumerTag -> {});
     }
 
-    private static String classificarProvisorio(String conteudo) {
-        return "(classificação pendente)";
+    private static ClassificadorTexto criarClassificadorSentimento() {
+        Map<String, List<String>> exemplos = new HashMap<>();
+
+        exemplos.put("positivo", List.of(
+                "Produto excelente, superou minhas expectativas",
+                "Entrega rápida e produto de ótima qualidade",
+                "Adorei o produto, vale cada centavo",
+                "Super recomendo, qualidade excelente",
+                "Fiquei muito satisfeito com a compra",
+                "Ótimo atendimento e produto de qualidade"
+        ));
+
+        exemplos.put("negativo", List.of(
+                "Não gostei, o produto veio com defeito",
+                "Péssima experiência, não recomendo",
+                "Produto horrível, não funciona direito",
+                "Decepcionado com a compra, não vale o preço",
+                "Qualidade muito ruim, não recomendo a ninguém",
+                "Chegou quebrado, péssimo serviço"
+        ));
+
+        exemplos.put("neutro", List.of(
+                "O produto é razoável, cumpre o que promete",
+                "Nada de especial, mas também não é ruim",
+                "Produto dentro do esperado, nada excepcional",
+                "Entrega dentro do prazo, produto comum",
+                "É ok, atende a necessidade básica",
+                "Produto mediano, sem grandes destaques"
+        ));
+
+        return new ClassificadorTexto(exemplos);
     }
 }
