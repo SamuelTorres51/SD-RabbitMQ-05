@@ -40,7 +40,7 @@ public class GeradorMensagens {
         mapper.registerModules(new JavaTimeModule());
 
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("rabbitmq"); // dentro do docker-compose isso vira o nome do serviço "rabbitmq"
+        factory.setHost("rabbitmq");
         factory.setPort(5672);
         factory.setUsername("guest");
         factory.setPassword("guest");
