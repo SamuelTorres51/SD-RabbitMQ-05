@@ -7,12 +7,18 @@ services:
       - "15672:15672"
     networks:
       - atividade5-net
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   gerador:
     build: ./gerador-mensagens
     container_name: gerador
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     restart: on-failure
     networks:
       - atividade5-net
@@ -21,7 +27,8 @@ services:
     build: ./consumidor-sentimento
     container_name: consumidor-sentimento
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     restart: on-failure
     networks:
       - atividade5-net
@@ -30,7 +37,8 @@ services:
     build: ./consumidor-suporte
     container_name: consumidor-suporte
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     restart: on-failure
     networks:
       - atividade5-net

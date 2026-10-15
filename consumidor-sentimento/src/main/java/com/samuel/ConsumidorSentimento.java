@@ -15,7 +15,7 @@ public class ConsumidorSentimento {
     private static final String ROUTING_KEY = "review.product";
     private static final String FILA = "fila.avaliacoes";
 
-    private static final String DLX = "mensagens.dlx";
+    private static final String DLX = "mensagens.dlx.avaliacoes";
     private static final String FILA_DLQ = "fila.avaliacoes.dlq";
 
     public static void main(String[] args) throws Exception {

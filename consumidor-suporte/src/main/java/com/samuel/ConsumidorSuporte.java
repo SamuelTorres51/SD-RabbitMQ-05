@@ -15,7 +15,7 @@ public class ConsumidorSuporte {
     private static final String ROUTING_KEY = "support.request";
     private static final String FILA = "fila.suporte";
 
-    private static final String DLX = "mensagens.dlx";
+    private static final String DLX = "mensagens.dlx.suporte";
     private static final String FILA_DLQ = "fila.suporte.dlq";
 
     public static void main(String[] args) throws Exception {
