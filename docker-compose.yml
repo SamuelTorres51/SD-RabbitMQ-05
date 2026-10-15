@@ -3,8 +3,35 @@ services:
     image: rabbitmq:3-management
     container_name: rabbitmq
     ports:
-      - "5672:5672"    # porta AMQP, usada pelo código Java pra publicar/consumir
-      - "15672:15672"  # interface web de administração
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - atividade5-net
+
+  gerador:
+    build: ./gerador-mensagens
+    container_name: gerador
+    depends_on:
+      - rabbitmq
+    restart: on-failure
+    networks:
+      - atividade5-net
+
+  consumidor-sentimento:
+    build: ./consumidor-sentimento
+    container_name: consumidor-sentimento
+    depends_on:
+      - rabbitmq
+    restart: on-failure
+    networks:
+      - atividade5-net
+
+  consumidor-suporte:
+    build: ./consumidor-suporte
+    container_name: consumidor-suporte
+    depends_on:
+      - rabbitmq
+    restart: on-failure
     networks:
       - atividade5-net
 
